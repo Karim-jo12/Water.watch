@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WaterWatch</title>
+<style>
+  body { font-family: 'Poppins', sans-serif; margin:0; padding:0; background: linear-gradient(to bottom, #e8f6ff, #d1f0e4); color:#04395e; }
+  header, footer { padding: 1rem; text-align:center; }
+  nav button { margin:0.2rem; padding:0.5rem 1rem; border-radius:8px; border:none; cursor:pointer; transition:0.2s; }
+  nav button:hover { transform: scale(1.05); background-color:#06b6d4; color:white; }
+  .page { display:none; padding:1rem; }
+  .active { display:block; }
+  input[type=number] { width:100%; padding:0.3rem; margin:0.2rem 0; border-radius:6px; border:1px solid #ccc; }
+  button.main { background:#06b6d4; color:white; padding:0.5rem 1rem; border:none; border-radius:8px; cursor:pointer; transition:0.2s; }
+  button.main:hover { transform:scale(1.05); }
+  .card { background:white; padding:1rem; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); margin-bottom:1rem; }
+  .rtl { direction: rtl; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="siteTitle">WaterWatch</h1>
+  <p id="tagline">Track your water. Save the planet.</p>
+  <nav>
+    <button onclick="showPage('home')">Home</button>
+    <button onclick="showPage('calc')">Calculate</button>
+    <button onclick="showPage('tips')">Tips</button>
+    <button onclick="showPage('about')">About</button>
+    <button onclick="showPage('community')">Community</button>
+    <select id="langSelect" onchange="changeLang(this.value)">
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+    </select>
+  </nav>
+</header>
+
+<main>
+  <div id="home" class="page active">
+    <div class="card">
+      <h2 id="homeTitle">Welcome!</h2>
+      <p id="homeTagline">Track your water. Save the planet.</p>
+      <button class="main" onclick="showPage('calc')" id="startBtn">Get Started</button>
+    </div>
+  </div>
+
+  <div id="calc" class="page">
+    <div class="card">
+      <h2 id="calcTitle">Calculate your water usage</h2>
+      <p id="calcIntro">Enter your daily habits to estimate your water usage.</p>
+      <label id="lblShower">Shower (min)</label><input type="number" id="shower" value="8">
+      <label id="lblTap">Tap running (min)</label><input type="number" id="tap" value="10">
+      <label id="lblLaundry">Laundry loads/week</label><input type="number" id="laundry" value="2">
+      <label id="lblDishes">Dishwasher loads/week</label><input type="number" id="dishes" value="3">
+      <label id="lblToilet">Toilet flushes/day</label><input type="number" id="toilet" value="4">
+      <label id="lblKettle">Boiled water L/day</label><input type="number" id="kettle" value="1">
+      <br>
+      <button class="main" onclick="calculate()">Calculate</button>
+      <button onclick="resetInputs()">Reset</button>
+      <div id="resultDiv" class="card" style="display:none;"></div>
+    </div>
+  </div>
+
+  <div id="tips" class="page">
+    <div class="card">
+      <h2>Tips</h2>
+      <ul>
+        <li>Shorten showers, use full laundry loads, reuse water when possible.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="about" class="page">
+    <div class="card">
+      <h2>About</h2>
+      <p>WaterWatch is an educational project demonstrating SDG6 principles with interactive tools.</p>
+    </div>
+  </div>
+
+  <div id="community" class="page">
+    <div class="card">
+      <h2>Community</h2>
+      <div id="communityList">No submissions yet.</div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  &copy; WaterWatch
+</footer>
+
+<script>
+let lang = 'en';
+const translations = {
+  en:{siteTitle:'WaterWatch',tagline:'Track your water. Save the planet.',homeTitle:'Welcome!',homeTagline:'Track your water. Save the planet.',startBtn:'Get Started',calcTitle:'Calculate your water usage',calcIntro:'Enter your daily habits to estimate your water usage.',lblShower:'Shower (min)',lblTap:'Tap running (min)',lblLaundry:'Laundry loads/week',lblDishes:'Dishwasher loads/week',lblToilet:'Toilet flushes/day',lblKettle:'Boiled water L/day',result:'Estimated consumption',daily:'Daily',weekly:'Weekly',monthly:'Monthly',suggestionsTitle:'Suggestions',shareResult:'Share result (anonymous)',sharedSuccess:'Your result was shared!',tipsTitle:'Tips'},
+  ar:{siteTitle:'واتر واتش',tagline:'راقب استهلاكك للمياه. حافظ على كوكبك.',homeTitle:'أهلاً!',homeTagline:'راقب استهلاكك للمياه. حافظ على كوكبك.',startBtn:'ابدأ الآن',calcTitle:'احسب استهلاكك من المياه',calcIntro:'أدخل عاداتك اليومية لتقدير استهلاكك من المياه.',lblShower:'مدة الاستحمام (دقائق)',lblTap:'مدة فتح الماء (دقائق)',lblLaundry:'عدد غسلات الملابس/أسبوع',lblDishes:'عدد غسلات الصحون/أسبوع',lblToilet:'عدد مرات قضاء الحاجة/اليوم',lblKettle:'الماء المغلي (لتر/يوم)',result:'تقدير الاستهلاك',daily:'يومي',weekly:'أسبوعي',monthly:'شهري',suggestionsTitle:'نصائح',shareResult:'مشاركة النتيجة (مجهول)',sharedSuccess:'تمت مشاركة نتيجتك!',tipsTitle:'نصائح'}
+};
+
+function showPage(pageId){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+}
+
+function changeLang(l){
+  lang = l;
+  document.documentElement.dir = lang==='ar'?'rtl':'ltr';
+  updateTexts();
+}
+
+function updateTexts(){
+  const t = translations[lang];
+  document.getElementById('siteTitle').innerText = t.siteTitle;
+  document.getElementById('tagline').innerText = t.tagline;
+  document.getElementById('homeTitle').innerText = t.homeTitle;
+  document.getElementById('homeTagline').innerText = t.homeTagline;
+  document.getElementById('startBtn').innerText = t.startBtn;
+  document.getElementById('calcTitle').innerText = t.calcTitle;
+  document.getElementById('calcIntro').innerText = t.calcIntro;
+  document.getElementById('lblShower').innerText = t.lblShower;
+  document.getElementById('lblTap').innerText = t.lblTap;
+  document.getElementById('lblLaundry').innerText = t.lblLaundry;
+  document.getElementById('lblDishes').innerText = t.lblDishes;
+  document.getElementById('lblToilet').innerText = t.lblToilet;
+  document.getElementById('lblKettle').innerText = t.lblKettle;
+}
+
+function calculate(){
+  const shower = Number(document.getElementById('shower').value);
+  const tap = Number(document.getElementById('tap').value);
+  const laundry = Number(document.getElementById('laundry').value);
+  const dishes = Number(document.getElementById('dishes').value);
+  const toilet = Number(document.getElementById('toilet').value);
+  const kettle = Number(document.getElementById('kettle').value);
+  const rates = {shower:10, tap:6, laundry:50, dishes:12, toilet:6};
+  const daily = shower*rates.shower + tap*rates.tap + laundry*rates.laundry/7 + dishes*rates.dishes/7 + toilet*rates.toilet + kettle;
+  const weekly = daily*7;
+  const monthly = daily*30;
+  let suggestions = [];
+  if(shower>6) suggestions.push(lang==='ar'?'قلل مدة الاستحمام.':'Reduce shower time.');
+  if(tap>5) suggestions.push(lang==='ar'?'أغلق الحنفية أثناء الغسل.':'Turn off tap while washing.');
+  if(laundry>1) suggestions.push(lang==='ar'?'استعمل غسلات كاملة.':'Run full laundry loads.');
+  if(dishes>2) suggestions.push(lang==='ar'?'استعمل غسالة كاملة.':'Use full dishwasher loads.');
+  if(toilet>5) suggestions.push(lang==='ar'?'قلل عدد المرات عند الإمكان.':'Reduce unnecessary flushes.');
+  if(kettle>2) suggestions.push(lang==='ar'?'اغلي كمية الماء التي تحتاجها فقط.':'Boil only needed water.');
+  if(suggestions.length===0) suggestions.push(lang==='ar'?'سلوك ممتاز!':'Excellent habits!');
+  const t = translations[lang];
+  document.getElementById('resultDiv').style.display='block';
+  document.getElementById('resultDiv').innerHTML=`<strong>${t.result}</strong><br>${t.daily}: ${daily.toFixed(1)} L, ${t.weekly}: ${weekly.toFixed(1)} L, ${t.monthly}: ${monthly.toFixed(1)} L<br><strong>${t.suggestionsTitle}</strong><ul>${suggestions.map(s=>'<li>'+s+'</li>').join('')}</ul>`;
+  saveCommunity(daily);
+}
+
+function resetInputs(){
+  document.getElementById('shower').value=8;
+  document.getElementById('tap').value=10;
+  document.getElementById('laundry').value=2;
+  document.getElementById('dishes').value=3;
+  document.getElementById('toilet').value=4;
+  document.getElementById('kettle').value=1;
+  document.getElementById('resultDiv').style.display='none';
+}
+
+function saveCommunity(daily){
+  let data = JSON.parse(localStorage.getItem('waterwatch_submissions')||'[]');
+  data.unshift({daily});
+  localStorage.setItem('waterwatch_submissions', JSON.stringify(data));
+  updateCommunity();
+}
+
+function updateCommunity(){
+  let data = JSON.parse(localStorage.getItem('waterwatch_submissions')||'[]');
+  const div = document.getElementById('communityList');
+  if(data.length===0){ div.innerHTML='No submissions yet.'; return;}
+  div.innerHTML = data.map(d=>`<div>${d.daily} L/day</div>`).join('');
+}
+
+updateTexts();
+updateCommunity();
+</script>
+
+</body>
+</html>
